@@ -1,11 +1,11 @@
 // add a person to the world
-CREATE (:Person {name: 'Andreas Kollegger', id:randomUUID()})
+CREATE (:Person {name: 'Andreas', livesAt: '110 Kollegger Ave', id:randomUUID()})
 
 // get all people in the world
 MATCH (p:Person) RETURN p
 
-// get all people in the world named Andreas Kollegger
-MATCH (p:Person {name: 'Andreas Kollegger'}) RETURN p
+// get all people in the world named Andreas
+MATCH (p:Person {name: 'Andreas'}) RETURN p
 
 // get all people in the world by $name parameter
 MATCH (p:Person {name: $name}) RETURN p
