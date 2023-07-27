@@ -8,7 +8,184 @@ In this workshop we'll answer these questions:
 Together we'll learn about graphs using Cypher, Neo4j's graph query language.
 
 ---
+# MATCH clause
 
-# Slide 2
+```cypher
+// find all people
+MATCH (p:Person) RETURN p
+```
 
-Maybe?
+---
+
+# CREATE clause
+
+```cypher
+// add a Person to the world
+CREATE (p:Person {
+  name: 'Andreas Kollegger',
+  livesAt: '110 Kollegger Ave',
+  id:randomUUID()
+}) RETURN p
+```
+
+---
+
+# CREATE with parameters
+
+```cypher
+// set query parameters
+:params name => "Andreas"
+```
+  
+```cypher
+// findAllPeopleByName() – find all people by $name parameter
+MATCH (p:Person {name: $name}) RETURN p
+```
+
+---
+
+# Advanced parameters
+
+```cypher
+// a map of values used as a parameters
+:params dto => ({name:"Andreas", livesAt: '110 Kollegger Ave'})
+```
+
+```cypher
+// add a parameterized Person to the world
+CREATE (p:Person) SET p = $dto SET p.id = randomUUID() RETURN p
+```
+
+---
+# getPeople() 
+
+```cypher
+// getPeople() – get all people in the world
+MATCH (p:Person) RETURN p
+```
+
+---
+# findAllPeopleByName()
+
+```cypher
+// findAllPeopleByName() – find all people in the world by $name parameter
+MATCH (p:Person {name: $name}) RETURN p
+```
+
+---
+# findFirstPersonByName()
+
+```cypher
+ // findFirstPersonByName() - find the first person by $name parameter
+MATCH (p:Person {name: $name}) RETURN p LIMIT 1
+```
+
+---
+# getPersonById()
+
+```cypher
+// getPersonById() – get a Person by unique ID
+MATCH (p:Person) WHERE p.id = $id RETURN p
+```
+
+---
+# Generate 100 people
+```cypher
+// make 100 people living on same street
+UNWIND range(1,100) as surname
+WITH surname, toInteger(floor(rand()*10)) as streetnumber
+CREATE (p:Person {name:"Robi " + surname, 
+  livesAt: streetnumber + " Some Street", 
+  id:randomUUID()
+})
+```
+
+---
+# Migrate livesAt to an Address node
+
+```cypher
+// create addresses for each person
+MATCH (p:Person)
+MERGE (a:Address {street: p.livesAt})
+RETURN p, a
+```
+---
+# MATCH a specific node pair
+
+```cypher
+// pair a person with their address
+MATCH (p:Person {livesAt: "110 Kollegger Ave"}),
+      (a:Address {street: "110 Kollegger Ave"})
+RETURN p, a
+```
+
+---
+# MERGE a specific relationship
+
+```cypher
+// relationship from a person to their address
+MATCH (p:Person {livesAt: "110 Kollegger Ave"}),
+      (a:Address {street: "110 Kollegger Ave"})
+MERGE (p)-[r:LIVES_AT]->(a)
+RETURN p, r, a
+```
+
+---
+# MERGE relationships for all Person/Address pairs
+
+```cypher
+// connect each person to their address
+MATCH (p:Person)
+MERGE (a:Address {street: p.livesAt})
+MERGE (p)-[r:LIVES_AT]->(a)
+RETURN p, r, a
+
+---
+# count() function
+
+```cypher
+// count people at each address
+MATCH (p:Person)-[r:LIVES_AT]->(a:Address)
+RETURN a.street, count(p) as family
+```
+---
+# Connect addresses into a path
+
+```cypher
+MATCH (a:Address)
+WITH a ORDER BY a.street ASC
+WITH collect(a) as addresses
+FOREACH (i in range(0, size(addresses) - 2) |
+  FOREACH (node1 in [addresses[i]] |
+    FOREACH (node2 in [addresses[i+1]] |
+      CREATE (node1)-[:NEXT_TO]->(node2)
+)))
+```
+
+---
+# MATCH a longer path
+
+```cypher
+// get the neighborhood
+MATCH neighborhood=(:Person)-[:LIVES_AT]->(:Address)
+      -[:NEXT_TO]->
+      (:Address)<-[:LIVES_AT]-(:Person)
+RETURN neighborhood
+```
+
+---
+# Find the larget household
+
+```cypher
+MATCH (p:Person)-[:LIVES_AT]->(a:Address)
+RETURN a.street, count(p) as family ORDER BY family DESC LIMIT 1
+```
+---
+# Connect yourself to a person next to you
+
+```cypher
+MATCH (p1:Person {name: "Andreas Kollegger"}),
+      (p2:Person {name: "Adam Cowley"})
+MERGE (p1)-[r:KNOWS]->(p2)
+RETURN p, r, a
+```
