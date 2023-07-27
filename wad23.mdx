@@ -139,7 +139,7 @@ MATCH (p:Person)
 MERGE (a:Address {street: p.livesAt})
 MERGE (p)-[r:LIVES_AT]->(a)
 RETURN p, r, a
-
+```
 ---
 # count() function
 
