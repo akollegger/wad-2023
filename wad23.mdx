@@ -152,7 +152,9 @@ RETURN a.street, count(p) as family
 ```cypher
 // count each Person who livesAt address
 MATCH (p:Person)
-RETURN p.livesAt, count(p) as family```
+RETURN p.livesAt, count(p) as family
+```
+
 ---
 # Connect addresses into a path
 
