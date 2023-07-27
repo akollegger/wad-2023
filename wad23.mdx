@@ -148,6 +148,11 @@ RETURN p, r, a
 MATCH (p:Person)-[r:LIVES_AT]->(a:Address)
 RETURN a.street, count(p) as family
 ```
+
+```cypher
+// count each Person who livesAt address
+MATCH (p:Person)
+RETURN p.livesAt, count(p) as family```
 ---
 # Connect addresses into a path
 
@@ -188,4 +193,16 @@ MATCH (p1:Person {name: "Andreas Kollegger"}),
       (p2:Person {name: "Adam Cowley"})
 MERGE (p1)-[r:KNOWS]->(p2)
 RETURN p, r, a
+```
+
+---
+# Indexing on Person name
+
+```cypher
+CREATE INDEX named_persons FOR (n:Person) ON (n.name)
+```
+
+```cypher
+CREATE INDEX named_persons IF NOT EXISTS
+FOR (n:Person) ON (n.surname)
 ```
